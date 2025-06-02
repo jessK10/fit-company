@@ -1,3 +1,4 @@
+from flasgger import Swagger
 from flask import Flask, request, jsonify, g
 from pydantic import ValidationError
 from .models_dto import UserSchema, UserResponseSchema, LoginSchema, TokenSchema, UserProfileSchema, UserProfileResponseSchema, WodResponseSchema, WodExerciseSchema, MuscleGroupImpact
@@ -11,7 +12,7 @@ from .services.fitness_data_init import init_fitness_data
 from .services.fitness_service import (
     get_all_exercises, get_exercise_by_id, get_exercises_by_muscle_group
 )
-from .services.fitness_coach_service import calculate_intensity, request_wod
+from .services.fitness_coach_service import request_wod_from_microservice
 import datetime
 import os
 import random
@@ -24,12 +25,23 @@ from .models_db import UserExerciseHistoryModel
 
 
 app = Flask(__name__)
+swagger = Swagger(app)
 
 BOOTSTRAP_KEY = os.environ.get("BOOTSTRAP_KEY", "bootstrap-secret-key")
 
 @app.route("/health")
 def health():
+    """
+    Health Check Endpoint
+    ---
+    responses:
+      200:
+        description: Service is healthy
+        examples:
+          application/json: {"status": "UP"}
+    """
     return {"status": "UP"}
+
 
 @app.route("/users", methods=["POST"])
 @admin_required

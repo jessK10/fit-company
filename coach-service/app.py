@@ -47,23 +47,24 @@ def generate_wod(request: ExerciseRequest):
     wod_exercises = []
 
     for ex in selected:
-        wod_exercises.append(WodExerciseSchema(
-            id=ex["id"],
-            name=ex["name"],
-            description=ex["description"],
-            difficulty=ex["difficulty"],
-            muscle_groups=[
-                MuscleGroupImpact(
-                    id=1,
-                    name="Chest",
-                    body_part="Upper",
-                    is_primary=True,
-                    intensity=ex["difficulty"] * 1.2
-                )
-            ],
-            suggested_weight=random.uniform(5, 50),
-            suggested_reps=random.randint(8, 15)
-        ))
+       wod_exercises.append(WodExerciseSchema(
+    id=ex["id"],
+    name=ex["name"],
+    description=ex["description"],
+    difficulty=int(ex["difficulty"]),  
+    muscle_groups=[
+        MuscleGroupImpact(
+            id=1,
+            name="Chest",
+            body_part="Upper",
+            is_primary=True,
+            intensity=float(ex["difficulty"] * 1.2)
+        )
+    ],
+    suggested_weight=random.uniform(5, 50),
+    suggested_reps=random.randint(8, 15)
+))
+
 
     return WodResponseSchema(
         exercises=wod_exercises,
