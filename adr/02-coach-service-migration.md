@@ -6,7 +6,7 @@ Our application was originally built as a monolith, which worked fine in the beg
 
 At the same time, we knew the startup was aiming to scale fast and potentially grow into more features like diet plans, payments, etc. So it didn’t make sense to keep everything in one place anymore.
 
----
+
 
  We Decided to Do
 
@@ -14,7 +14,7 @@ Instead of rewriting the whole app or causing downtime, we followed the 'Strangl
 
 We chose the WOD generation logic as the first piece to extract and created a new microservice for it — called the 'coach service'. This service would be responsible for just one thing: generating personalized workouts.
 
----
+
 
 IMPLIMENTATION STEPS
 
@@ -49,7 +49,25 @@ IMPLIMENTATION STEPS
  Communication is clean and synchronous 
 This opens the door to slowly migrating other parts in the future (diet plans, payments, etc.).
 
+# K6 Load Test Summary
 
-FINAL NOTE
+Users simulated (VUs): 50
+
+Duration: 30 seconds
+
+Total Requests: 1500
+
+Success Rate: 100% (✓ status was 200)
+
+Avg Request Duration: ~15ms
+
+Max Duration: 234ms
+
+No Failures: http_req_failed: 0.00%
+
+Conclusion: current setup can easily handle at least 50 concurrent users, each doing ~1 request/sec, without any issues. 
+
+
+# FINAL NOTE
 
 This was a practical first step toward microservices. It made the system more modular and easier to manage, without overcomplicating things. The strangler fig pattern helped us modernize gradually and safely.
