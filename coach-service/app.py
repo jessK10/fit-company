@@ -47,7 +47,7 @@ def generate_wod(request: ExerciseRequest):
     wod_exercises = []
 
     for ex in selected:
-       wod_exercises.append(WodExerciseSchema(
+        wod_exercises.append(WodExerciseSchema(
     id=ex["id"],
     name=ex["name"],
     description=ex["description"],

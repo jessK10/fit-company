@@ -5,7 +5,7 @@ from functools import wraps
 from flask import request, jsonify, g
 from ..models_db import UserModel
 from ..database import db_session
-from ..services.user_service import verify_password  # ✅ use this instead of hash_password
+from ..services.user_service import verify_password 
 
 SECRET_KEY = "fit-secret-key"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 8

@@ -1,4 +1,3 @@
-from flasgger import Swagger
 from flask import Flask, request, jsonify, g
 from pydantic import ValidationError
 from .models_dto import UserSchema, UserResponseSchema, LoginSchema, TokenSchema, UserProfileSchema, UserProfileResponseSchema, WodResponseSchema, WodExerciseSchema, MuscleGroupImpact
@@ -12,7 +11,7 @@ from .services.fitness_data_init import init_fitness_data
 from .services.fitness_service import (
     get_all_exercises, get_exercise_by_id, get_exercises_by_muscle_group
 )
-from .services.fitness_coach_service import request_wod_from_microservice
+from .services.fitness_coach_service import calculate_intensity, request_wod
 import datetime
 import os
 import random
@@ -25,23 +24,12 @@ from .models_db import UserExerciseHistoryModel
 
 
 app = Flask(__name__)
-swagger = Swagger(app)
 
 BOOTSTRAP_KEY = os.environ.get("BOOTSTRAP_KEY", "bootstrap-secret-key")
 
 @app.route("/health")
 def health():
-    """
-    Health Check Endpoint
-    ---
-    responses:
-      200:
-        description: Service is healthy
-        examples:
-          application/json: {"status": "UP"}
-    """
     return {"status": "UP"}
-
 
 @app.route("/users", methods=["POST"])
 @admin_required
@@ -260,28 +248,48 @@ def get_exercise(exercise_id):
 @jwt_required
 def get_wod():
     try:
-        user_email = g.user_email
-
-        # Get user's previous exercise history
-        db = db_session()
-        past_exercises = (
-            db.query(UserExerciseHistoryModel.exercise_id)
-            .filter(UserExerciseHistoryModel.user_email == user_email)
-            .all()
+        # Get the workout exercises with their muscle groups
+        exercises_with_muscles = request_wod()
+        
+        # Convert to response schema
+        wod_exercises = []
+        for exercise, muscle_groups in exercises_with_muscles:
+            # Create muscle group impact objects
+            muscle_impacts = [
+                MuscleGroupImpact(
+                    id=mg.id,
+                    name=mg.name,
+                    body_part=mg.body_part,
+                    is_primary=is_primary,
+                    # Higher intensity for primary muscle groups
+                    intensity=calculate_intensity(exercise.difficulty) * (1.2 if is_primary else 0.8)
+                )
+                for mg, is_primary in muscle_groups
+            ]
+            
+            # Create exercise object
+            wod_exercise = WodExerciseSchema(
+                id=exercise.id,
+                name=exercise.name,
+                description=exercise.description,
+                difficulty=exercise.difficulty,
+                muscle_groups=muscle_impacts,
+                suggested_weight=random.uniform(5.0, 50.0),  # Random weight between 5 and 50 kg
+                suggested_reps=random.randint(8, 15)  # Random reps between 8 and 15
+            )
+            wod_exercises.append(wod_exercise)
+        
+        response = WodResponseSchema(
+            exercises=wod_exercises,
+            generated_at=datetime.datetime.now(datetime.UTC).isoformat()
         )
-        exclude_ids = [row.exercise_id for row in past_exercises]
-        db.close()
-
-        # Call the microservice
-        from .services.fitness_coach_service import request_wod_from_microservice
-        response = request_wod_from_microservice(user_email, exclude_ids)
 
         # Save WOD to history
         db = db_session()
         try:
-            for exercise in response.exercises:
+            for exercise in wod_exercises:
                 history_entry = UserExerciseHistoryModel(
-                    user_email=user_email,
+                    user_email=g.user_email,
                     exercise_id=exercise.id,
                     date_assigned=date.today()
                 )
@@ -289,15 +297,14 @@ def get_wod():
             db.commit()
         except Exception as e:
             db.rollback()
-            print("Error saving history:", e)
+            print("Error saving exercise history:", e)
         finally:
             db.close()
 
         return jsonify(response.model_dump()), 200
-
+        
     except Exception as e:
-        return jsonify({"error": "Error generating WOD", "details": str(e)}), 500
-
+        return jsonify({"error": "Error generating workout of the day", "details": str(e)}), 500
     
 @app.route("/history", methods=["GET"])
 @jwt_required
@@ -338,4 +345,3 @@ def run_app():
 
 if __name__ == "__main__":
     run_app()
-
