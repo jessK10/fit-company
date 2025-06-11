@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, g
 from pydantic import ValidationError
 from ..models_dto import UserSchema, UserProfileSchema
-from ..services.user_service import (
+from fit.services.user_service import (
     create_user as create_user_service,
     get_all_users as get_all_users_service,
     update_user_profile,

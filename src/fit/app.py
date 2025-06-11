@@ -7,7 +7,8 @@ from .database import init_db, db_session
 from .models_db import UserModel
 from .services.user_service import create_user as create_user_service
 from .services.data_init import init_data
-from .blueprints import user_bp, auth_bp, workout_bp
+from fit.blueprints import user_bp, auth_bp, workout_bp
+from src.fit.blueprints.generate_wods_blueprint import generate_wods_bp
 import os
 
 app = Flask(__name__)
@@ -16,6 +17,7 @@ app = Flask(__name__)
 app.register_blueprint(user_bp, url_prefix='/')
 app.register_blueprint(auth_bp, url_prefix='/')
 app.register_blueprint(workout_bp, url_prefix='/workouts')
+app.register_blueprint(generate_wods_bp)
 
 BOOTSTRAP_KEY = os.environ.get("BOOTSTRAP_KEY", "bootstrap-secret-key")
 

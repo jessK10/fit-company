@@ -29,7 +29,7 @@ class RabbitMQService:
         # Declare the main queue with message TTL of 10 minutes (600000 ms)
         # and max length of 100 messages
         arguments = {
-            "x-message-ttl": 600000,  # 10 minutes
+            "x-message-ttl": 60000,  # 10 minutes
             "x-max-length": 100,
             "x-dead-letter-exchange": "dlx",  # Dead Letter Exchange
             "x-dead-letter-routing-key": f"{self.queue_name}-dead"

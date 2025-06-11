@@ -1,4 +1,4 @@
-from .user_blueprint import user_bp
+from fit.blueprints.user_blueprint import user_bp
 from .auth_blueprint import auth_bp
 from .workout_blueprint import workout_bp
 

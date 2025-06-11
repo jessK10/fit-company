@@ -16,7 +16,8 @@ COPY main_monolith.py /app/main_monolith.py
 RUN uv sync
 
 ENV FLASK_ENV=development
-# ENV PYTHONPATH=/app/fit
+ENV PYTHONPATH=/app/src
+
 
 EXPOSE 5000
 

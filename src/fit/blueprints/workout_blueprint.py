@@ -3,6 +3,10 @@ from pydantic import ValidationError
 from ..models_dto import  RegisterWorkoutSchema
 from ..services.workout_service import get_last_workout_exercises, register_workout
 from ..services.auth_service import  api_key_required
+from fit.services.rabbitmq_service import rabbitmq_service
+from ..models_db import UserModel
+from ..database import db_session
+from datetime import datetime
 
 workout_bp = Blueprint('workout', __name__)
    
@@ -37,3 +41,25 @@ def perform_workout():
         return jsonify({"error": "Invalid workout data", "details": e.errors()}), 400
     except Exception as e:
         return jsonify({"error": "Error registering workout", "details": str(e)}), 500 
+    
+@workout_bp.route("/generateWods", methods=["POST"])
+@api_key_required
+def generate_wods_for_all_users():
+    try:
+        db = db_session()
+        users = db.query(UserModel).all()
+        today = datetime.utcnow().date().isoformat()
+
+        for user in users:
+            message = {
+                "user_id": str(user.id),
+                "date": today,
+                "retry": 0
+            }
+            rabbitmq_service.publish_message(message)
+
+        db.close()
+        return jsonify({"message": "WOD jobs queued", "user_count": len(users)}), 202
+
+    except Exception as e:
+        return jsonify({"error": "WOD generation failed", "details": str(e)}), 500

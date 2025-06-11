@@ -53,6 +53,7 @@ services:
       - POSTGRES_DB=fit-db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=docker
+      
     healthcheck:
       test: ["CMD-SHELL", "pg_isready", "-d", "fit-db"]
       interval: 5s
@@ -82,8 +83,8 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     ports:
-      - "12104:5672" # AMQP protocol port
-      - "12105:15672" # Management interface port
+      - "12104:5672"
+      - "12105:15672" 
     environment:
       - RABBITMQ_DEFAULT_USER=rabbit
       - RABBITMQ_DEFAULT_PASS=docker
