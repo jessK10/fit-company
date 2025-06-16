@@ -100,14 +100,15 @@ class WodExerciseSchema(BaseModel):
     name: str
     description: str
     difficulty: int
-    muscle_groups: List[MuscleGroupImpact]
-    suggested_weight: float = 0.0  # Default weight suggestion
-    suggested_reps: int = 10  # Default number of reps
 
-class WodResponseSchema(BaseModel):
+class WorkoutResponseSchema(BaseModel):
+    id: int
     exercises: List[WodExerciseSchema]
-    generated_at: datetime
 
 class RegisterWorkoutSchema(BaseModel):
     email: str
     exercises: List[int] = Field(..., description="List of exercise IDs performed in the workout")
+
+class WorkoutExercisesList(BaseModel):
+    workout_id: int
+    exercises: List[int]

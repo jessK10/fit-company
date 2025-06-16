@@ -1,3 +1,4 @@
+import logging
 from flask import Flask, request, jsonify
 from pydantic import ValidationError
 
@@ -6,18 +7,28 @@ from .models_dto import UserSchema
 from .database import init_db, db_session
 from .models_db import UserModel
 from .services.user_service import create_user as create_user_service
-from .services.data_init import init_data
-from fit.blueprints import user_bp, auth_bp, workout_bp
-from src.fit.blueprints.generate_wods_blueprint import generate_wods_bp
+from .blueprints import user_bp, auth_bp, workout_bp
 import os
 
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
+# Create Flask app
 app = Flask(__name__)
+app.logger.setLevel(logging.DEBUG)
+
+# Force stdout to be unbuffered
+import sys
+sys.stdout.reconfigure(line_buffering=True)
 
 # Register blueprints
 app.register_blueprint(user_bp, url_prefix='/')
 app.register_blueprint(auth_bp, url_prefix='/')
 app.register_blueprint(workout_bp, url_prefix='/workouts')
-app.register_blueprint(generate_wods_bp)
 
 BOOTSTRAP_KEY = os.environ.get("BOOTSTRAP_KEY", "bootstrap-secret-key")
 
@@ -59,10 +70,7 @@ def run_app():
     """Entry point for the application script"""
     # Initialize the database before starting the app
     init_db()
-    
-    # Initialize fitness data
-    init_data()
-    
+
     app.run(host="0.0.0.0", port=5000, debug=True)
 
 if __name__ == "__main__":

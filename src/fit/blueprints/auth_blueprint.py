@@ -26,7 +26,6 @@ def login():
             return jsonify({"error": "Invalid credentials"}), 401
         
         # Create access token with standard OAuth claims
-        access_token_expires = datetime.timedelta(minutes=30)
         token_data = {
             "sub": user.email,
             "name": user.name,
@@ -37,7 +36,6 @@ def login():
         
         access_token = create_access_token(
             data=token_data, 
-            expires_delta=access_token_expires
         )
         
         token = TokenSchema(

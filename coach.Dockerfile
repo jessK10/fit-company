@@ -11,9 +11,9 @@ ENV UV_LINK_MODE=copy
 
 COPY pyproject.toml uv.lock ./
 
-COPY main_coach.py /app/main_coach.py
-
 RUN uv sync
+
+COPY main_coach.py /app/main_coach.py
 
 ENV FLASK_ENV=development
 # ENV PYTHONPATH=/app/fit

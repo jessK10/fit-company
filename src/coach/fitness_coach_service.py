@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import List, Tuple
 
@@ -6,6 +7,8 @@ from .models_db import ExerciseModel, MuscleGroupModel, exercise_muscle_groups
 from .database import db_session
 import random
 from time import time
+
+logger = logging.getLogger(__name__)
 
 def heavy_computation(duration_seconds: int = 3):
     """
@@ -36,9 +39,7 @@ def get_last_workout_exercises(user_email: str) -> List[int]:
     headers = {"X-API-Key": os.getenv("FIT_API_KEY")}
     history_response = requests.post(f"{monolith_url}/workouts/last", headers=headers, json={"email": user_email})
     history_response.raise_for_status()
-    history_exercises = history_response.json()
-
-    return [history_exercise["id"] for history_exercise in history_exercises]
+    return history_response.json()
 
 def save_workout_exercises(user_email: str, exercise_ids: List[int]):
     """
@@ -46,10 +47,10 @@ def save_workout_exercises(user_email: str, exercise_ids: List[int]):
     """
     monolith_url = os.getenv("MONOLITH_URL")
     headers = {"X-API-Key": os.getenv("FIT_API_KEY")}
-    requests.post(f"{monolith_url}/workouts/register", headers=headers, json={"email": user_email, "exercises": exercise_ids})
+    requests.post(f"{monolith_url}/workouts/", headers=headers, json={"email": user_email, "exercises": exercise_ids})
 
 
-def request_wod(user_email: str) -> List[Tuple[ExerciseModel, List[Tuple[MuscleGroupModel, bool]]]]:
+def create_wod_for_user(user_email: str) -> List[Tuple[ExerciseModel, List[Tuple[MuscleGroupModel, bool]]]]:
     """
     Request a workout of the day (WOD).
     Returns a list of tuples containing:
@@ -61,7 +62,9 @@ def request_wod(user_email: str) -> List[Tuple[ExerciseModel, List[Tuple[MuscleG
     Avoids repeating exercises from the user's last workout.
     """
     # Simulate heavy computation (AI model processing, complex calculations, etc.) for 1-5 seconds
+    logger.debug(f"running heavy computation to generate wod for user {user_email}")
     heavy_computation(random.randint(1, 5)) # DO NOT REMOVE THIS LINE
+    logger.debug(f"heavy computation completed for user {user_email}")
     
     db = db_session()
     

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, Integer, Boolean, ForeignKey, Table, Text, Date
+from sqlalchemy import Column, String, Float, Integer, Boolean, ForeignKey, Table, Text, Date, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from .database import Base
@@ -18,18 +18,36 @@ class UserModel(Base):
     fitness_goal = Column(String, nullable=True)
     onboarded = Column(String, default="false", nullable=False)
 
+    # Relationships
+    workouts = relationship("WorkoutModel", back_populates="user")
+
     def __repr__(self):
         return f"<User(email='{self.email}', name='{self.name}', role='{self.role}')>"
 
+class WorkoutModel(Base):
+    __tablename__ = 'workouts'
+    
+    id = Column(Integer, primary_key=True)
+    user_email = Column(String, ForeignKey('users.email'), nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
+    performed_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    user = relationship("UserModel", back_populates="workouts")
+    exercises = relationship("UserExerciseHistory", back_populates="workout")
+
+    def __repr__(self):
+        return f"<Workout(id={self.id}, user_email='{self.user_email}', created_at='{self.created_at}', performed_at='{self.performed_at}')>"
 
 class UserExerciseHistory(Base):
     __tablename__ = 'user_exercise_history'
     
     id = Column(Integer, primary_key=True)
-    user_email = Column(String, ForeignKey('users.email'), nullable=False) 
+    workout_id = Column(Integer, ForeignKey('workouts.id'), nullable=False)
     exercise_id = Column(Integer, nullable=False)
-    date = Column(Date, nullable=False, default=datetime.date.today)
-    user = relationship("UserModel")
+    
+    # Relationships
+    workout = relationship("WorkoutModel", back_populates="exercises")
 
     def __repr__(self):
-        return f"<UserExerciseHistory(id={self.id}, user_email='{self.user_email}', exercise_id='{self.exercise_id}', date='{self.date}')>"
+        return f"<UserExerciseHistory(id={self.id}, workout_id='{self.workout_id}', exercise_id='{self.exercise_id}')>"

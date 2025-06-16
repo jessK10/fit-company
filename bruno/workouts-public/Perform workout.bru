@@ -1,0 +1,16 @@
+meta {
+  name: Perform workout
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{endpoint}}/workouts/1/perform
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+  }
+}
