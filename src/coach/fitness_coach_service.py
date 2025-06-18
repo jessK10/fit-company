@@ -7,6 +7,8 @@ from .models_db import ExerciseModel, MuscleGroupModel, exercise_muscle_groups
 from .database import db_session
 import random
 from time import time
+from .queue_publisher import publish_workout_event
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -43,12 +45,25 @@ def get_last_workout_exercises(user_email: str) -> List[int]:
 
 def save_workout_exercises(user_email: str, exercise_ids: List[int]):
     """
-    Save the workout exercises for a user to the monolith.
+    Save the workout exercises for a user to the monolith,
+    and publish a workout event to RabbitMQ.
     """
     monolith_url = os.getenv("MONOLITH_URL")
     headers = {"X-API-Key": os.getenv("FIT_API_KEY")}
-    requests.post(f"{monolith_url}/workouts/", headers=headers, json={"email": user_email, "exercises": exercise_ids})
+    
+    response = requests.post(f"{monolith_url}/workouts", headers=headers, json={
+        "email": user_email,
+        "exercise_ids": exercise_ids
+    })
+    response.raise_for_status()
 
+    #  Publish to RabbitMQ
+    publish_workout_event({
+        "user_email": user_email,
+        "workout_type": "custom",  # optional
+        "duration_minutes": len(exercise_ids) * 5,  # basic estimate
+        "performed_at": datetime.utcnow().isoformat()
+    })
 
 def create_wod_for_user(user_email: str) -> List[Tuple[ExerciseModel, List[Tuple[MuscleGroupModel, bool]]]]:
     """
