@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
-from models.workout_stat import WorkoutStat, Base  # ✅ include WorkoutStat here
-from db.database import SessionLocal, engine        # ✅ import engine too
+from models.workout_stat import WorkoutStat, Base  
+from db.database import SessionLocal, engine        
 from queue_consumer import start_consumer
 import threading
 from datetime import datetime

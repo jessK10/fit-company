@@ -7,7 +7,7 @@ from db.database import SessionLocal
 
 
 def callback(ch, method, properties, body):
-    print("📩 Received event in stats service")
+    print("Received event in stats service")
     data = json.loads(body)
 
     session = SessionLocal()
@@ -21,10 +21,10 @@ def callback(ch, method, properties, body):
         )
         session.add(workout)
         session.commit()
-        print(f"✅ Saved workout stat for user {data['user_id']}")
+        print(f"Saved workout stat for user {data['user_id']}")
     except Exception as e:
         session.rollback()
-        print(f"❌ Error saving workout stat: {e}")
+        print(f"Error saving workout stat: {e}")
     finally:
         session.close()
 
@@ -51,4 +51,4 @@ def start_consumer():
         channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
         channel.start_consuming()
     except Exception as e:
-        print(f"❌ Failed to connect to RabbitMQ: {e}")
+        print(f" Failed to connect to RabbitMQ: {e}")
